@@ -1,3 +1,30 @@
+// loader-----------------------------------------------------
+// window.onload = () => {
+//   const loader = document.getElementById("loader");
+//   function unlockScroll() {
+//     document.body.style.overflow = "auto";
+//   }
+//   setTimeout(() => {
+//     loader.style.display = "none";
+//     unlockScroll();
+//   }, 1000);
+// };
+// document.body.style.overflow = "hidden";
+
+function load() {
+  const loader = document.getElementById("loader");
+  function unlockScroll() {
+    document.body.style.overflow = "auto";
+  }
+  setTimeout(() => {
+    loader.style.display = "none";
+    unlockScroll();
+  }, 500);
+};
+document.body.style.overflow = "hidden";
+load();
+
+
 // navbar when scroll>10--------------------------------------
 document.addEventListener("DOMContentLoaded", function () {
   const navbar = document.querySelector(".navbar");
@@ -217,66 +244,92 @@ document.addEventListener("DOMContentLoaded", function () {
       error.textContent = "";
     });
 
-    // Validate each field
+    // Submission rate limiting
+    const lastSubmission = localStorage.getItem('lastSubmission');
+    if (lastSubmission && (Date.now() - lastSubmission < 120000)) { // 2 minutes
+      alert('You have submitted the form recently. Please wait a moment before submitting again.');
+      return;
+    }
+
     let isValid = true;
 
     // Name validation
     const nameField = document.getElementById("name");
-    if (nameField.value.trim() === "") {
-      document.getElementById("name-error").textContent =
-        "Please enter your name";
+    const nameValue = nameField.value.trim();
+    if (nameValue === "") {
+      document.getElementById("name-error").textContent = "Please enter your name";
+      isValid = false;
+    } else if (nameValue.length < 2 || nameValue.length > 50) {
+      document.getElementById("name-error").textContent = "Name must be between 2 and 50 characters";
+      isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(nameValue)) {
+      document.getElementById("name-error").textContent = "Name can only contain letters and spaces";
+      isValid = false;
+    } else if (/(.)\1{2,}/.test(nameValue)) {
+      document.getElementById("name-error").textContent = "Name contains gibberish patterns";
       isValid = false;
     }
 
     // Mobile number validation
     const mobileField = document.getElementById("mobile");
-    if (mobileField.value.trim() === "") {
-      document.getElementById("mobile-error").textContent =
-        "Please enter your mobile number";
+    const mobileValue = mobileField.value.trim();
+    if (mobileValue === "") {
+      document.getElementById("mobile-error").textContent = "Please enter your mobile number";
       isValid = false;
-    } else {
-      const mobileRegex = /^\d{10}$/; // Adjust as per your mobile number format
-      if (!mobileRegex.test(mobileField.value.trim())) {
-        document.getElementById("mobile-error").textContent =
-          "Please enter a valid mobile number";
-        isValid = false;
-      }
+    } else if (!/^[+\d()\s-]{10,15}$/.test(mobileValue)) {
+      document.getElementById("mobile-error").textContent = "Please enter a valid mobile number (10-15 digits)";
+      isValid = false;
     }
 
     // Email validation
     const emailField = document.getElementById("email");
-    if (emailField.value.trim() === "") {
-      document.getElementById("email-error").textContent =
-        "Please enter your email address";
+    const emailValue = emailField.value.trim();
+    const disposableDomains = ["mailinator.com", "temp-mail.org", "10minutemail.com"];
+    if (emailValue === "") {
+      document.getElementById("email-error").textContent = "Please enter your email address";
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailValue)) {
+      document.getElementById("email-error").textContent = "Please enter a valid email address";
       isValid = false;
     } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailField.value.trim())) {
-        document.getElementById("email-error").textContent =
-          "Please enter a valid email address";
+      const domain = emailValue.split('@')[1];
+      if (disposableDomains.includes(domain)) {
+        document.getElementById("email-error").textContent = "Disposable email addresses are not allowed";
         isValid = false;
       }
+    }
+
+    // Passport number validation
+    const passportField = document.getElementById("passport");
+    const passportValue = passportField.value.trim();
+    if (passportValue !== "" && !/^[a-zA-Z0-9]{6,12}$/.test(passportValue)) {
+      document.getElementById("passport-error").textContent = "Passport number must be 6-12 alphanumeric characters";
+      isValid = false;
     }
 
     // Level of study validation
     const levelField = document.getElementById("level");
     if (levelField.value === "") {
-      document.getElementById("level-error").textContent =
-        "Please select your level of study";
+      document.getElementById("level-error").textContent = "Please select your level of study";
       isValid = false;
     }
 
     // Country to study validation
     const countryField = document.getElementById("country-to-study");
     if (countryField.value === "") {
-      document.getElementById("country-error").textContent =
-        "Please select a country you prefer";
+      document.getElementById("country-error").textContent = "Please select a country you prefer";
       isValid = false;
     }
 
-    // If form is valid, submit it
+    // If form is valid, get reCAPTCHA token and submit
     if (isValid) {
-      form.submit();
+      grecaptcha.ready(function() {
+        grecaptcha.execute('6LeotPUrAAAAAN4PNirt60gm49LwuF0K2Fo6_kfx', {action: 'submit'}).then(function(token) {
+          document.getElementById('recaptchaResponse').value = token;
+          localStorage.setItem('lastSubmission', Date.now());
+          form.submit();
+        });
+      });
     }
   });
 });

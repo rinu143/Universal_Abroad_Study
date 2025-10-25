@@ -33,13 +33,16 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
       </noscript>
+
+      <!-- reCAPTCHA Script -->
+      <script src="https://www.google.com/recaptcha/api.js?render=6LeotPUrAAAAAN4PNirt60gm49LwuF0K2Fo6_kfx"></script>
    </head>
    <body>
       <!-- loader----------------------------------------- -->
       <div id="loader" role="alert" aria-live="assertive">
          <!-- <p>Loading...</p> -->
          <br/>
-         <!-- <div class="loader"></div> -->
+         <div class="loader"></div>
       </div>
       <div id="main-div">
          <!-- Header section------------------------------- -->
@@ -628,6 +631,10 @@
                         </div>
                      </div>
                      <div class="form-fields">
+                        <div class="form-item" style="display:none;">
+                           <input type="text" id="honeypot" name="honeypot" />
+                           <label for="honeypot">Honeypot</label>
+                        </div>
                         <div class="form-item">
                            <select id="level" name="level">
                               <option value="" disabled selected hidden>Select Level of Study</option>
@@ -661,6 +668,7 @@
                            <span class="error" id="country-error"></span>
                         </div>
                      </div>
+                     <input type="hidden" name="recaptcha_response" id="recaptchaResponse">
                      <input class="form-btn" type="submit" value="Submit" />
                   </div>
                </div>
